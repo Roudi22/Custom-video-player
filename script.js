@@ -4,8 +4,10 @@ const progressBar = document.querySelector(".progress-bar");
 const playPauseBtn = document.querySelector(".play-pause i");
 const skipForward = document.querySelector(".skip-forward");
 const skipBackward = document.querySelector(".skip-backward");
-const volumeBtn = document.querySelector(".volume i")
-const volumeSlider = document.querySelector("input")
+const volumeBtn = document.querySelector(".volume i");
+const volumeSlider = document.querySelector("input");
+const speedBtn = document.querySelector(".playback-speed span");
+const speedOptions = document.querySelector(".speed-options");
 
 mainVideo.addEventListener("timeupdate", (e)=>{
     let { currentTime, duration } = e.target
@@ -21,6 +23,7 @@ volumeBtn.addEventListener("click", ()=> {
         mainVideo.volume = 0.0
         volumeBtn.classList.replace("fa-volume-high", "fa-volume-xmark")
     }
+    volumeSlider.value = mainVideo.volume
 })
 
 volumeSlider.addEventListener("input", (e)=> {
@@ -31,6 +34,25 @@ volumeSlider.addEventListener("input", (e)=> {
         volumeBtn.classList.replace("fa-volume-xmark", "fa-volume-high")
     }
 })
+
+speedBtn.addEventListener("click", ()=> {
+    speedOptions.classList.toggle("show")
+})
+
+speedOptions.querySelectorAll("li").forEach(option => {
+    option.addEventListener("click", ()=> {
+        mainVideo.playbackRate = option.dataset.speed;
+        speedOptions.querySelector(".active").classList.remove("active");
+        option.classList.add("active");
+    })
+})
+
+document.addEventListener("click", (e)=> {
+    if(e.target.tagName !== "SPAN" || e.target.className !== "material-symbols-rounded") {
+        speedOptions.classList.remove("show")
+    }
+})
+
 
 skipBackward.addEventListener("click", ()=>{
     mainVideo.currentTime -= 5
