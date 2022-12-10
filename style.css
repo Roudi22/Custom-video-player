@@ -154,7 +154,7 @@ body, .video-controls, .video-timer, .options{
     pointer-events: none;
     transition: opacity 0.13s ease;
 }
-.playback-content button:hover ~ .speed-options {
+.playback-content .speed-options.show {
     opacity: 1;
     pointer-events: auto;
 }
