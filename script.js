@@ -8,12 +8,86 @@ const volumeBtn = document.querySelector(".volume i");
 const volumeSlider = document.querySelector("input");
 const speedBtn = document.querySelector(".playback-speed span");
 const speedOptions = document.querySelector(".speed-options");
+const picInPicBtn = document.querySelector(".pic-in-pic span");
+const fullscreenBtn = document.querySelector(".fullscreen i");
+const videoTimeline = document.querySelector(".video-timeline");
+const currentVidTime = document.querySelector(".current-time");
+const videoDuration = document.querySelector(".video-duration");
+
+let timer;
+
+const hideControls = ()=> {
+    if(mainVideo.paused) return;
+    timer = setTimeout(()=> {
+        container.classList.remove("show-controls");
+    }, 3000)
+}
+hideControls();
+
+container.addEventListener("mousemove", () => {
+    container.classList.add("show-controls");
+    clearTimeout(timer);
+    hideControls();
+})
+
+const formatTime = (time)=> {
+    // getting seconds, minutes, hours
+    let seconds = Math.floor(time % 60);
+    let minutes = Math.floor(time / 60) % 60
+    let hours = Math.floor(time / 3600);
+
+
+    seconds = seconds < 10 ? `0${seconds}` : seconds;
+    minutes = minutes < 10 ? `0${minutes}` : minutes;
+    hours = hours < 10 ? `0${hours}` : hours;
+
+    if(hours == 0) {
+        return `${minutes}:${seconds}`
+    }
+
+    return `${hours}:${minutes}:${seconds}`;
+}
 
 mainVideo.addEventListener("timeupdate", (e)=>{
     let { currentTime, duration } = e.target
     let percent = ( currentTime / duration) * 100
-    progressBar.style.width = `${percent}%`
+    progressBar.style.width = `${percent}%`;
+    currentVidTime.innerText = formatTime(currentTime);
 })
+
+mainVideo.addEventListener("loadeddata", (e)=> {
+    videoDuration.innerText = formatTime(e.target.duration)
+})
+
+const draggableProgressBar = (e)=> {
+    let timelineWidth = videoTimeline.clientWidth; // getting videoTimeline width
+    progressBar.style.width = `${e.offsetX}px`
+    mainVideo.currentTime = (e.offsetX / timelineWidth) * mainVideo.duration; // updating video currentTime
+    currentVidTime.innerText = formatTime(mainVideo.currentTime)
+}
+
+videoTimeline.addEventListener("mousedown", ()=> {
+    videoTimeline.addEventListener("mousemove", draggableProgressBar)
+})
+
+container.addEventListener("mouseup", ()=> {
+    videoTimeline.removeEventListener("mousemove", draggableProgressBar)
+})
+
+videoTimeline.addEventListener("mousemove", e => {
+    const progressTime = videoTimeline.querySelector("span");
+    let offsetX = e.offsetX;
+    progressTime.style.left = `${offsetX}px`
+    let timelineWidth = videoTimeline.clientWidth; // getting videoTimeline width
+    let percent = (e.offsetX / timelineWidth) * mainVideo.duration;
+    progressTime.innerText = formatTime(percent)
+})
+
+videoTimeline.addEventListener("click", e => {
+    let timelineWidth = e.target.clientWidth; // getting videoTimeline width
+    mainVideo.currentTime = (e.offsetX / timelineWidth) * mainVideo.duration; // updating video currentTime
+})
+
 
 volumeBtn.addEventListener("click", ()=> {
     if(!volumeBtn.classList.contains("fa-volume-high")) {
@@ -53,6 +127,19 @@ document.addEventListener("click", (e)=> {
     }
 })
 
+picInPicBtn.addEventListener("click", ()=> {
+    mainVideo.requestPictureInPicture();
+})
+
+fullscreenBtn.addEventListener("click", ()=> {
+    container.classList.toggle("fullscreen");
+    if(document.fullscreenElement) {
+        fullscreenBtn.classList.replace("fa-compress", "fa-expand")
+        return document.exitFullscreen();
+    }
+    fullscreenBtn.classList.replace("fa-expand", "fa-compress")
+    container.requestFullscreen();
+})
 
 skipBackward.addEventListener("click", ()=>{
     mainVideo.currentTime -= 5
